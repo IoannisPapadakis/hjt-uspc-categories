@@ -1,152 +1,67 @@
-function download_patent_files(year_start, year_end, parent_dname, opt2001)
-% Save patent grant text files from Google patents.
-%
-%   IN:
-%       - year_start: first year for which to download the files. Earliest
-%         option here is 1976.
-%       - year_end: last year for which to download the files. Latest
-%         option here is 2015, as they stopped the service then.
-%       - parent_dname: provide a name for the directory.
-%       - opt2001: pick an option for the files in 2001, either 'txt' or
-%         'xml'
-%
+clear
+close all
+clc
 
-%% Get HTML from website
-
-disp('Get names of files to download.')
-
-google_patents_URL = ...
-    'https://www.google.com/googlebooks/uspto-patents-grants-text.html';
-[webStr, status] = urlread(google_patents_URL);
-
-if status == 0
-    warning('Problem with accessing Google Patents website.')
-end
-
-
-%% Find the download links on the webpage
-url_base = 'http://storage.googleapis.com/patents/grant_full_text/';
-patternStart = strfind(webStr, url_base);
-
-searchStrEnd = '.zip';
-patternEnd = strfind(webStr, searchStrEnd);
-
-for i=1:length(patternStart)
-    startStr = patternStart(i);
-    endStr = min( patternEnd(patternEnd > startStr) ) + 3;
-    download_url{i, 1} = webStr(startStr:endStr);
-end
-
-len1 = length(download_url);
-
-if strcmp(opt2001, 'txt')
-    opt_str = '2001/pg'; % don't download files with this pattern
-elseif strcmp(opt2001, 'xml')
-    opt_str = '2001/pftaps'; % don't download files with this pattern
-else
-    error('Option for 2001 filetype not clear.')
-end
-
-find_delPattern = regexp(download_url, opt_str);
-notEmpt_Cells = cellfun(@isempty, find_delPattern, 'Uniformoutput', false);
-indic_del = find([notEmpt_Cells{:}] == 0)';
-download_url( indic_del ) = [];
-
-assert( len1 - 52 == length(download_url), ...
-    'Not sure if deleted the right download links,')
+c11 = [8, 19, 71, 127, 442, 504];
+c12 = [106,118, 401, 427];
+c13 = [48, 55, 95, 96];
+c14 = [534, 536, 540, 544, 546, 548, 549, 552, 554, 556, 558, 560, 562, ...
+    564, 568, 570];
+c15 = [520, 521, 522, 523, 524, 525, 526, 527, 528, 530];
+c19 = [23, 34, 44, 102, 117, 149, 156, 159, 162, 196, 201, 202, 203, ...
+    204, 205, 208, 210, 216, 222, 252, 260, 261, 349, 366, 416, 422, ...
+    423, 430, 436, 494, 501, 502, 510, 512, 516, 518, 585, 588];
+c21 = [178, 333, 340, 342, 343, 358, 367, 370, 375, 379, 385, 455];
+c22 = [341, 380, 382, 395, 700, 701, 702, 704, 705, 706, 707, 708, ...
+    709, 710, 712, 713, 714];
+c23 = [345, 347];
+c24 = [360, 365, 369, 711];
+c31 = [424, 514];
+c32 = [128, 600, 601, 602, 604, 606, 607];
+c33 = [435, 800];
+c39 = [351, 433, 623];
+c41 = [174, 200, 327, 329, 330, 331, 332, 334, 335, 336, 337, 338, 392, 439];
+c42 = [313, 314, 315, 362, 372, 445];
+c43 = [73, 324, 356, 374];
+c44 = [250, 376, 378];
+c45 = [60, 136, 290, 310, 318, 320, 322, 323, 361, 363, 388, 429];
+c46 = [257, 326, 438, 505];
+c49 = [191, 218, 219];
+c51 = [65, 82, 83, 125, 141, 142, 144, 173, 209, 221, 225, 226, 234, 241, ...
+    242, 264, 271, 407, 408, 409, 414, 425, 451, 493];
+c52 = [29, 72, 75, 76, 140, 147, 148, 163, 164, 228, 266, 270, 413, ...
+    419, 420];
+c53 = [91, 92, 123, 185, 188, 192, 251, 303, 415, 417, 418, 464, 474, ...
+    475, 476, 477];
+c54 = [352, 353, 355, 359, 396, 399];
+c55 = [104, 105, 114, 152, 180, 187, 213, 238, 244, 246, 258, 280, ...
+    293, 295, 296, 298, 301, 305, 410, 440];
+c59 = [7, 16, 42, 49, 51, 74, 81, 86, 89, 100, 124, 157, 184, 193, 194, ...
+    198, 212, 227, 235, 239, 254, 267, 291, 294, 384, 400, 402, 406, 411, ...
+    453, 454, 470, 482, 483, 492, 508];
+c61 = [43, 47, 56, 99, 111, 119, 131, 426, 449, 452, 460];
+c62 = [273, 446, 463, 472, 473];
+c63 = [2, 12, 24, 26, 28, 36, 38, 57, 66, 68, 69, 79, 87, 112, 139, 223, 450];
+c64 = [37, 166, 171, 172, 175, 299, 405, 507];
+c65 = [4, 5, 30, 70, 132, 182, 211, 256, 297, 312];
+c66 = [110, 122, 126, 165, 237, 373, 431, 432];
+c67 = [138, 277, 285, 403];
+c68 = [53, 206, 215, 217, 220, 224, 229, 232, 383];
+c69 = [1, 14, 15, 27, 33, 40, 52, 54, 59, 62, 63, 84, 101, 108, 109, 116, ...
+    134, 135, 137, 150, 160, 168, ...
+    169, 177, 181, 186, 190, 199, 231, 236, 245, 248, 249, 269, ...
+    276, 278, 279, 281, 283, 289, 292, 300, 368, 404, 412, 428, 434, 441, 462, 503];
 
 
-%% Run some checks to make sure that the links look plausible
-assert( not( isempty( download_url ) ) )
-assert( iscell( download_url ) )
-
-for i=1:length(download_url)
-    extrStr = download_url{i};
-    assert( strcmp( extrStr(1:numel(url_base)), url_base), ...
-        '%d: Wrong start', i)
-    assert( strcmp( extrStr(end-3:end), '.zip' ), '%d:  Wrong ending', i)
-    assert( numel(extrStr) > 68, '%d: Implausibly short.', i)
-    assert( numel(extrStr) < 100, '%d: Implausibly long', i)
-end
-
-% Extract the year index from every link
-year_indices = cellfun(@(x) x(numel(url_base) + 1 : numel(url_base) + 4), ...
-    download_url, 'UniformOutput', false);
-year_indices = cellfun(@str2num, year_indices, 'UniformOutput', false);
-year_indices = cell2mat(year_indices);
-
-assert( all( (year_indices >= 1976) & (year_indices <= 2015) ), ...
-    'Files should be between %d and %d.', year_start, year_end)
 
 
-%% Access URLs and download files
 
-userCheck = 'no'; % set default
-prompt = ['Start downloading ', num2str( length(download_url) ), ...
-    ' files? (Type y to continue):\n'];
-userCheck = input(prompt, 's');
 
-if not(strcmp(userCheck, 'y'))
-    error('Stop.')
-end
 
-[status, ~, ~] = mkdir(parent_dname);
-assert( status ~= 0 )
 
-for ix_year=year_start:year_end
-    [status, ~, ~] = mkdir(parent_dname, num2str(ix_year));
-    assert( status ~= 0 )
 
-    extrInd = find( year_indices == ix_year );
-    url_yearly = download_url(extrInd);
 
-    % Check that known format string is in there
-    if ix_year == 2001
-        
-        if strcmp(opt2001, 'txt')
-            filetype = 'pftaps';
-        elseif strcmp(opt2001, 'xml')
-            filetype =  'pg';
-        else
-            error('Option for 2001 filetype not clear.')
-        end
-        
-    elseif (ix_year >= 1976) && (ix_year <= 2000)
-        filetype = 'pftaps';
-    elseif (ix_year >= 2002) && (ix_year <= 2004)
-        filetype = 'pg';
-    elseif (ix_year >= 2005) && (ix_year <= 2015)
-        filetype = 'ipg';
-    else
-        error('Wrong year.')
-    end
 
-    indic_checkFormat = regexp(url_yearly, filetype);
-    assert( not( any( cellfun(@isempty, indic_checkFormat) ) ), ...
-        'Format looks wrong in year %d.', ix_year)
 
-    tic
-    fprintf('Downloading files %d (%d files): ', ix_year, ...
-        length(url_yearly))
-    for i=1:length(url_yearly)
-        url = url_yearly{i};
 
-        % Determine where to save the file and how to call it.
-        filename = [parent_dname, '/', url(numel(url_base) + 1:end)];
 
-        % Download file and save to disk.
-        [~, status] = urlwrite(url, filename);
-
-        % If download not successful, show warning message.
-        if status == 0
-            warning('Download of %s not successful.', filename(18:end))
-        end
-
-        fprintf('.')
-    end
-    fprintf('\n')
-    fprintf('Time: %d minutes.\n', round(toc/60) )
-end
-
-disp('_____________________________________________')
-disp('Done with downloading files from Google Patents.')
